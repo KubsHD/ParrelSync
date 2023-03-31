@@ -52,7 +52,7 @@ namespace ParrelSync
         /// Creates clone from the project currently open in Unity Editor.
         /// </summary>
         /// <returns></returns>
-        public static Project CreateCloneFromCurrent()
+        public static Project CreateCloneFromCurrent(string[] AdditionalPathsToLink)
         {
             if (IsClone())
             {
@@ -61,7 +61,7 @@ namespace ParrelSync
             }
 
             string currentProjectPath = ClonesManager.GetCurrentProjectPath();
-            return ClonesManager.CreateCloneFromPath(currentProjectPath);
+            return ClonesManager.CreateCloneFromPath(currentProjectPath, AdditionalPathsToLink);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace ParrelSync
         /// </summary>
         /// <param name="sourceProjectPath"></param>
         /// <returns></returns>
-        public static Project CreateCloneFromPath(string sourceProjectPath)
+        public static Project CreateCloneFromPath(string sourceProjectPath, string[] AdditionalPathsToLink)
         {
             Project sourceProject = new Project(sourceProjectPath);
 
@@ -104,9 +104,9 @@ namespace ParrelSync
             Debug.Log("Library copy: " + cloneProject.libraryPath);
             ClonesManager.CopyDirectoryWithProgressBar(sourceProject.libraryPath, cloneProject.libraryPath,
                 "Cloning Project Library '" + sourceProject.name + "'. ");
-            Debug.Log("Packages copy: " + cloneProject.libraryPath);
-            ClonesManager.CopyDirectoryWithProgressBar(sourceProject.packagesPath, cloneProject.packagesPath,
-              "Cloning Project Packages '" + sourceProject.name + "'. ");
+            // Debug.Log("Packages copy: " + cloneProject.libraryPath);
+            //ClonesManager.CopyDirectoryWithProgressBar(sourceProject.packagesPath, cloneProject.packagesPath,
+             // "Cloning Project Packages '" + sourceProject.name + "'. ");
 
 
             //Link Folders
@@ -114,7 +114,13 @@ namespace ParrelSync
             ClonesManager.LinkFolders(sourceProject.projectSettingsPath, cloneProject.projectSettingsPath);
             ClonesManager.LinkFolders(sourceProject.autoBuildPath, cloneProject.autoBuildPath);
             ClonesManager.LinkFolders(sourceProject.localPackages, cloneProject.localPackages);
+            ClonesManager.LinkFolders(sourceProject.packagesPath, cloneProject.packagesPath);
 
+            foreach (var path in AdditionalPathsToLink)
+            {
+                ClonesManager.LinkFolders(Path.Combine(sourceProject.projectPath, path), Path.Combine(cloneProject.projectPath, path));
+            }
+            
             ClonesManager.RegisterClone(cloneProject);
 
             return cloneProject;

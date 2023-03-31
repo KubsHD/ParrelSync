@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Sirenix.OdinInspector;
 
 namespace ParrelSync
 {
@@ -30,6 +34,16 @@ namespace ParrelSync
         /// </summary>
         Vector2 clonesScrollPos;
 
+        [SerializeField]
+        public string[] AdditionalPathsToLink;
+
+        private SerializedObject _so;
+
+        private void OnEnable()
+        {
+            _so = new SerializedObject(this);
+        }
+        
         private void OnGUI()
         {
             /// If it is a clone project...
@@ -83,6 +97,13 @@ namespace ParrelSync
             }
             else// If it is an original project...
             {
+
+                _so.Update();
+                SerializedProperty stringsProperty = _so.FindProperty("AdditionalPathsToLink");
+                EditorGUILayout.PropertyField(stringsProperty, true);
+                _so.ApplyModifiedProperties();
+
+                
                 if (isCloneCreated)
                 {
                     GUILayout.BeginVertical("HelpBox");
@@ -177,7 +198,7 @@ namespace ParrelSync
 
                     if (GUILayout.Button("Add new clone"))
                     {
-                        ClonesManager.CreateCloneFromCurrent();
+                        ClonesManager.CreateCloneFromCurrent(AdditionalPathsToLink);
                     }
 
                     GUILayout.EndVertical();
@@ -189,7 +210,7 @@ namespace ParrelSync
                     EditorGUILayout.HelpBox("No project clones found. Create a new one!", MessageType.Info);
                     if (GUILayout.Button("Create new clone"))
                     {
-                        ClonesManager.CreateCloneFromCurrent();
+                        ClonesManager.CreateCloneFromCurrent(AdditionalPathsToLink);
                     }
                 }
             }
